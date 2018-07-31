@@ -14,7 +14,8 @@
     "license" : "MIT",
     "minimum-stability" : "stable",
     "require": {
-        "php" : "^7.2"
+        "php" : "^7.2",
+        "ext-zip" : "*"
     },
     "require-dev" : {
         "phpunit/phpunit" : "^7.0",
