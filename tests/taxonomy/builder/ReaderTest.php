@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace test\edwrodrig\ncbi\taxonomy\builder;
 
-use edwrodrig\ncbi\taxonomy\builder\exception\FileNotFoundException;
 use edwrodrig\ncbi\taxonomy\builder\Reader;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
