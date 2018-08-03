@@ -28,10 +28,18 @@ class Builder
         return $this->target;
     }
 
+    public function setTarget(string $target) : string {
+        return $this->target = $target;
+    }
+
     /**
      *
      */
     public function build() {
+
+        if ( file_exists($this->target) ) {
+            throw new exception\BuildTargetAlreadyExistsException($this->target);
+        }
 
         $db = new PDO('sqlite:' . $this->target);
         $db->exec('CREATE TABLE names (id INTEGER, name TEXT)');

@@ -19,7 +19,7 @@ class Service
     private $pdo;
 
     public function __construct(string $filename) {
-        $this->pdo = new PDO("sqlite3:" . $filename);
+        $this->pdo = new PDO("sqlite:" . $filename);
     }
 
     /**
@@ -28,13 +28,15 @@ class Service
      */
     public function getParentIdNodeByIdNode(int $id_node) : ?int {
         $stmt = $this->pdo->prepare('SELECT parent_id FROM nodes WHERE id = ?');
-        $stmt->bindValue(0, $id_node, PDO::PARAM_INT);
+        $stmt->bindValue(1, $id_node, PDO::PARAM_INT);
         $stmt->execute();
 
-        $parent_id = $stmt->fetchColumn(0);
+        $stmt->bindColumn(1,$parent_id, PDO::PARAM_INT);
 
-        if ( $parent_id === FALSE ) null;
-        else return $parent_id;
+        if ( $stmt->fetch(PDO::FETCH_BOUND) )
+            return $parent_id;
+        else
+            return null;
     }
 
     /**
@@ -43,12 +45,14 @@ class Service
      */
     public function getNameByIdNode(int $id_node) : ?string {
         $stmt = $this->pdo->prepare('SELECT name FROM names WHERE id = ?');
-        $stmt->bindValue(0, $id_node, PDO::PARAM_INT);
+        $stmt->bindValue(1, $id_node, PDO::PARAM_INT);
         $stmt->execute();
 
-        $name = $stmt->fetchColumn(0);
+        $stmt->bindColumn(1,$name, PDO::PARAM_STR);
 
-        if ( $name === FALSE ) return null;
-        else return $name;
+        if ( $stmt->fetch(PDO::FETCH_BOUND))
+            return $name;
+        else
+            return null;
     }
 }

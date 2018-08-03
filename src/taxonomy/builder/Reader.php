@@ -10,6 +10,12 @@ declare(strict_types=1);
 namespace edwrodrig\ncbi\taxonomy\builder;
 
 
+/**
+ * Class Reader
+ *
+ * Class 
+ * @package edwrodrig\ncbi\taxonomy\builder
+ */
 class Reader
 {
 

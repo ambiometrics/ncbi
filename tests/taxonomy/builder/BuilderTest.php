@@ -26,12 +26,27 @@ class BuilderTest extends TestCase
      */
     private $root;
 
+    /**
+     * @var string
+     */
+    private $db_name;
+
     public function setUp() {
         $this->root = vfsStream::setup();
+        $this->db_name = tempnam(sys_get_temp_dir(), 'TEST_SQL');
+        if ( file_exists($this->db_name))
+            unlink($this->db_name);
+
+    }
+
+    public function tearDown() {
+        if ( file_exists($this->db_name))
+            unlink($this->db_name);
     }
 
     /**
      * @throws \edwrodrig\ncbi\taxonomy\builder\exception\FileNotFoundException
+     * @throws \edwrodrig\ncbi\taxonomy\builder\exception\BuildTargetAlreadyExistsException
      */
     public function testBuild()
     {
@@ -44,6 +59,7 @@ class BuilderTest extends TestCase
         ]);
         $reader = new Reader($folder);
         $builder = new Builder($reader);
+        $builder->setTarget($this->db_name);
         $builder->build();
 
         $this->assertFileExists($builder->getTarget());
@@ -55,4 +71,5 @@ class BuilderTest extends TestCase
         $result = $db->query('SELECT count(*) FROM names');
         $this->assertEquals(3, $result->fetchColumn(0));
     }
+
 }
