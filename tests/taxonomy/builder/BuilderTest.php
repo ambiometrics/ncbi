@@ -1,11 +1,6 @@
 <?php
 declare(strict_types=1);
-/**
- * Created by PhpStorm.
- * User: edwin
- * Date: 01-08-18
- * Time: 17:10
- */
+
 
 namespace test\edwrodrig\ncbi\taxonomy\builder;
 
@@ -15,7 +10,6 @@ use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\vfsStreamDirectory;
 use PDO;
 use PHPUnit\Framework\TestCase;
-use SQLite3;
 use test\edwrodrig\ncbi\Util;
 
 class BuilderTest extends TestCase

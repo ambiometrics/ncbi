@@ -1,19 +1,12 @@
 <?php
 declare(strict_types=1);
-/**
- * Created by PhpStorm.
- * User: edwin
- * Date: 31-07-18
- * Time: 17:23
- */
 
 namespace edwrodrig\ncbi\taxonomy\builder;
-
 
 /**
  * Class Reader
  *
- * Class 
+ * Class
  * @package edwrodrig\ncbi\taxonomy\builder
  */
 class Reader
@@ -46,12 +39,25 @@ class Reader
         }
     }
 
-
-    public function getNamesFilename() : string {
+    /**
+     * Get the names filename
+     *
+     * Get the filename of the file containing the name info of the nodes.
+     * The path contains the {@see Reader::$folder folder}
+     * @return string
+     */
+    private function getNamesFilename() : string {
         return $this->folder . '/names.dmp';
     }
 
-    public function getNodesFilename() : string {
+    /**
+     * Get the node filename
+     *
+     * Get the filename of the file containgin the parent info of the nodes
+     * The path contains the {@see Reader::$folder folder}
+     * @return string
+     */
+    private function getNodesFilename() : string {
         return $this->folder . '/nodes.dmp';
     }
 
