@@ -2,9 +2,15 @@
 
 include_once(__DIR__ . '/../vendor/autoload.php');
 
-$dummy = new \edwrodrig\ncbi\TaxonomyDownloader;
-//$dummy->download();
+$dummy = new \edwrodrig\ncbi\taxonomy\builder\Downloader;
+echo "Downloading...\n";
+$dummy->download();
+echo "Unziping...\n";
 $dummy->unzip();
-foreach ( $dummy->readNames() as $id => $name ) {
-    echo $id , " " , $name , "\n";
-}
+echo "Building...";
+$builder = $dummy->getBuilder();
+
+$builder->build();
+
+echo $builder->getTarget();
+

@@ -1,25 +1,19 @@
 <?php
 declare(strict_types=1);
-/**
- * Created by PhpStorm.
- * User: edwin
- * Date: 01-08-18
- * Time: 16:11
- */
 
 namespace edwrodrig\ncbi\taxonomy;
 
-use PDO;
+use SQLite3;
 
 class Service
 {
     /**
-     * @var PDO
+     * @var SQLite3
      */
-    private $pdo;
+    private $db;
 
     public function __construct(string $filename) {
-        $this->pdo = new PDO("sqlite:" . $filename);
+        $this->db = new SQLite3($filename,  SQLITE3_OPEN_READWRITE);
     }
 
     /**
@@ -27,14 +21,12 @@ class Service
      * @return null|int
      */
     public function getParentIdNodeByIdNode(int $id_node) : ?int {
-        $stmt = $this->pdo->prepare('SELECT parent_id FROM nodes WHERE id = ?');
-        $stmt->bindValue(1, $id_node, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt = $this->db->prepare('SELECT parent_id FROM nodes WHERE id = ?');
+        $stmt->bindValue(1, $id_node,  SQLITE3_INTEGER);
+        $result = $stmt->execute();
 
-        $stmt->bindColumn(1,$parent_id, PDO::PARAM_INT);
-
-        if ( $stmt->fetch(PDO::FETCH_BOUND) )
-            return $parent_id;
+        if ( $row = $result->fetchArray(SQLITE3_NUM) )
+            return $row[0];
         else
             return null;
     }
@@ -44,14 +36,12 @@ class Service
      * @return null|string
      */
     public function getNameByIdNode(int $id_node) : ?string {
-        $stmt = $this->pdo->prepare('SELECT name FROM names WHERE id = ?');
-        $stmt->bindValue(1, $id_node, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt = $this->db->prepare('SELECT name FROM names WHERE id = ?');
+        $stmt->bindValue(1, $id_node,  SQLITE3_INTEGER);
+        $result = $stmt->execute();
 
-        $stmt->bindColumn(1,$name, PDO::PARAM_STR);
-
-        if ( $stmt->fetch(PDO::FETCH_BOUND))
-            return $name;
+        if ( $row = $result->fetchArray(SQLITE3_NUM))
+            return $row[0];
         else
             return null;
     }

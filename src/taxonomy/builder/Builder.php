@@ -5,6 +5,10 @@ namespace edwrodrig\ncbi\taxonomy\builder;
 
 use PDO;
 
+/**
+ * Class Builder
+ * @package edwrodrig\ncbi\taxonomy\builder
+ */
 class Builder
 {
     /**
@@ -15,10 +19,12 @@ class Builder
     /**
      * @var string
      */
-    private $target = '/home/edwin/taxa/db';
+    private $target;
 
     public function __construct(Reader $reader) {
         $this->reader = $reader;
+        $this->target = tempnam(sys_get_temp_dir(), 'tax_db_');
+        unlink($this->target);
     }
 
     /**
@@ -32,9 +38,6 @@ class Builder
         return $this->target = $target;
     }
 
-    /**
-     *
-     */
     public function build() {
 
         if ( file_exists($this->target) ) {
