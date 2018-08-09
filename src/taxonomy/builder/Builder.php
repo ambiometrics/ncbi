@@ -3,10 +3,16 @@ declare(strict_types=1);
 
 namespace edwrodrig\ncbi\taxonomy\builder;
 
+use Exception;
 use PDO;
 
 /**
  * Class Builder
+ *
+ * This class build a  taxonomy database from taxonoic files downloaded with {@see Downloader the downloader}
+ * The downloader has a {@see Downloader::getBuilder() method to create a builder from downloaded files}
+ * Only create a builder class when you're trying to do advanced stuff.
+ *
  * @package edwrodrig\ncbi\taxonomy\builder
  */
 class Builder
@@ -87,17 +93,21 @@ class Builder
         $db->exec('CREATE UNIQUE INDEX idx_nodes_parent_id ON nodes(parent_id)');
     }
 
+    /**
+     * @return bool
+     * @throws Exception
+     */
     public function validate() : bool {
         $db = new PDO('sqlite:' . $this->target);
         $result = $db->query('SELECT name FROM sqlite_master WHERE type = "table"');
         $tables = $result->fetchAll(PDO::FETCH_COLUMN);
         if ( $tables != ['names', 'nodes'])
-            throw new \Exception(print_r($tables, true));
+            throw new Exception(print_r($tables, true));
 
         $result = $db->query('SELECT name FROM sqlite_master WHERE type = "index"');
         $indexes = $result->fetchAll(PDO::FETCH_COLUMN);
         if ( $indexes != ['idx_names_id', 'idx_nodes_id'] )
-            throw new \Exception(print_r($indexes, true));
+            throw new Exception(print_r($indexes, true));
 
         return true;
     }

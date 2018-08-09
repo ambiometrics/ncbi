@@ -5,7 +5,7 @@ namespace edwrodrig\ncbi\taxonomy;
 
 use SQLite3;
 
-class Service
+class Dao
 {
     /**
      * @var SQLite3

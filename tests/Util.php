@@ -10,6 +10,9 @@ declare(strict_types=1);
 namespace test\edwrodrig\ncbi;
 
 
+use edwrodrig\ncbi\taxonomy\builder\Builder;
+use edwrodrig\ncbi\taxonomy\builder\Reader;
+
 class Util
 {
     /**
@@ -46,5 +49,15 @@ class Util
         file_put_contents($folder . '/nodes.dmp', self::createNodesString($data));
         file_put_contents($folder . '/names.dmp', self::createNamesString($data));
 
+    }
+
+    static public function createTempDatabase(string $target, array $data) {
+        $file = tempnam(sys_get_temp_dir(), 'TEST_SQL');
+        unlink($file);
+        Util::createFiles($file, $data);
+        $reader = new Reader($file);
+        $builder = new Builder($reader);
+        $builder->setTarget($target);
+        $builder->build();
     }
 }
