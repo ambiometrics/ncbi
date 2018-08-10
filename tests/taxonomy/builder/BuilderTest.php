@@ -53,13 +53,13 @@ class BuilderTest extends TestCase
         ]);
         $reader = new Reader($folder);
         $builder = new Builder($reader);
-        $builder->setTarget($this->db_name);
+        $builder->setTargetFilename($this->db_name);
         $builder->build();
 
-        $this->assertFileExists($builder->getTarget());
-        $this->assertTrue($builder->validate());
+        $this->assertFileExists($builder->getTargetFilename());
 
-        $db = new PDO('sqlite:' . $builder->getTarget());
+
+        $db = new PDO('sqlite:' . $builder->getTargetFilename());
         $result = $db->query('SELECT count(*) FROM nodes');
         $this->assertEquals(3, $result->fetchColumn(0));
         $result = $db->query('SELECT count(*) FROM names');

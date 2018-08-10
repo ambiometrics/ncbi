@@ -12,5 +12,5 @@ $builder = $dummy->getBuilder();
 
 $builder->build();
 
-echo $builder->getTarget();
+echo $builder->getTargetFilename();
 

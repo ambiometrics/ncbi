@@ -70,7 +70,7 @@ class GetBasicInfoService
         $dao = $this->getDao();
 
         return [
-            'name' => $dao->getNameByIdNode($tax_id),
+            'name' => $dao->getScientificNameByIdNode($tax_id),
             'parent_id' => $dao->getParentIdNodeByIdNode($tax_id)
         ];
     }

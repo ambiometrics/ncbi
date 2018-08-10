@@ -6,13 +6,15 @@ namespace edwrodrig\ncbi\taxonomy\builder;
 /**
  * Class Reader
  *
- * Class
+ * Class to read files with the format of taxanomic data of NCBI.
+ * To get the files use the {@see Downloader}
  * @package edwrodrig\ncbi\taxonomy\builder
  */
 class Reader
 {
 
     /**
+     * The folder where the files are extracted.
      * @var string
      */
     private $folder;
@@ -20,7 +22,11 @@ class Reader
 
     /**
      * Reader constructor.
+     *
+     * This validates that the folder exists and have the needed files.
+     * The folder must containt the {@see Reader::getNamesFilename() names.dmp} and {@see Reader::getNodesFilename() nodes.dmp} file
      * @param string $folder
+     * @see Reader::$folder
      * @throws exception\FileNotFoundException
      */
     public function __construct(string $folder) {
@@ -53,7 +59,7 @@ class Reader
     /**
      * Get the node filename
      *
-     * Get the filename of the file containgin the parent info of the nodes
+     * Get the filename of the file contains the parent info of the nodes
      * The path contains the {@see Reader::$folder folder}
      * @return string
      */
@@ -61,9 +67,24 @@ class Reader
         return $this->folder . '/nodes.dmp';
     }
 
+    /**
+     * Read the names
+     *
+     * This is an iterable method that returns in every element the id as a key and the name as the value.
+     * Only the rows that are scientific names are considered.
+     * Scientific names rows are those which have `scientific name` in the fourth column.
+     * The id corresponds the first column of the {@see Reader::getNammesFilename() file}.
+     * The name corresponds the second column of the {@see Reader::getNamesFilename() file}.
+     * ```
+     * foreach ( $this->readNames() as $id => $name ) {
+     * }
+     * ```
+     */
     public function readNames() {
         $file = fopen($this->getNamesFilename(), 'r');
+
         while ($line = fgets($file)) {
+
             $tokens = explode("|", $line);
 
             $type = trim($tokens[3]);
@@ -74,10 +95,23 @@ class Reader
 
             yield $id => $name;
         }
+
         fclose($file);
 
     }
 
+    /**
+     * Read the nodes
+     *
+     * This is an iterable method that returns in every element the id as a key and the parent id as the value
+     * The id corresponds the first column of the {@see Reader::getNodesFilename() file}.
+     * The parent id corresponds the second column of the {@see Reader::getNodesFilename() file}.
+     * ```
+     * foreach ( $this->readNodes() as $id => $parent_id ) {
+     * }
+     * ```
+     * @return \Generator
+     */
     public function readNodes() {
 
         $file = fopen($this->getNodesFilename(), 'r');

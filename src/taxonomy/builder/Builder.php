@@ -3,15 +3,21 @@ declare(strict_types=1);
 
 namespace edwrodrig\ncbi\taxonomy\builder;
 
-use Exception;
+use edwrodrig\ncbi\taxonomy\builder\exception\BuildTargetAlreadyExistsException;
 use PDO;
 
 /**
  * Class Builder
  *
- * This class build a  taxonomy database from taxonoic files downloaded with {@see Downloader the downloader}
+ * This class build a  taxonomy database from taxononic files downloaded with {@see Downloader the downloader}
  * The downloader has a {@see Downloader::getBuilder() method to create a builder from downloaded files}
  * Only create a builder class when you're trying to do advanced stuff.
+ * ```
+ * $builder = $downloader->getBuilder();
+ * $builder->setTargetFilename('/path/to/database.sqlite3');
+ * $builder->build();
+ * ```
+ * When the database is builder the files from the {@see Reader reader} are not longer needed
  *
  * @package edwrodrig\ncbi\taxonomy\builder
  */
@@ -23,39 +29,59 @@ class Builder
     private $reader;
 
     /**
-     * @var string
+     * The target filename is the name where the sqlite3 database was saved.
+     * @var string|null
      */
-    private $target;
+    private $target_filename = null;
+
+    /**
+     * Operations per commmit
+     * @var int
+     */
+    private $commit_size = 500;
 
     public function __construct(Reader $reader) {
         $this->reader = $reader;
-        $this->target = tempnam(sys_get_temp_dir(), 'tax_db_');
-        unlink($this->target);
     }
 
     /**
+     * Get the target filename database.
+     * If must be set or this method will fail.
      * @return string
      */
-    public function getTarget() : string {
-        return $this->target;
+    public function getTargetFilename() : string {
+        return $this->target_filename;
     }
 
-    public function setTarget(string $target) : string {
-        return $this->target = $target;
+    /**
+     * Set the database target filename.
+     * This is needed for the builder to {@see Builder::build() work correctly}.
+     *
+     * @param string $target_filename
+     * @return Builder
+     */
+    public function setTargetFilename(string $target_filename) : Builder {
+        $this->target_filename = $target_filename;
+        return $this;
     }
 
-    public function build() {
+    /**
+     * Build the taxonomy database.
+     *
+     * The target filename must be {@see Builder::setTargetFilename() set} before this method is called or thi will fail.
+     *
+     */
+    public function build() : Builder {
 
-        if ( file_exists($this->target) ) {
-            throw new exception\BuildTargetAlreadyExistsException($this->target);
+        if ( file_exists($this->target_filename) ) {
+            throw new BuildTargetAlreadyExistsException($this->target_filename);
         }
 
-        $db = new PDO('sqlite:' . $this->target);
+        $db = new PDO('sqlite:' . $this->target_filename);
         $db->exec('CREATE TABLE names (id INTEGER, name TEXT)');
         $db->exec('CREATE TABLE nodes (id INTEGER, parent_id INTEGER)');
 
-
-        $i = 0;
+        $operations = 0;
         $db->beginTransaction();
         foreach ( $this->reader->readNames() as $id => $name ) {
             $stmt = $db->prepare('INSERT INTO names (id, name) VALUES(?,?)');
@@ -63,8 +89,8 @@ class Builder
             $stmt->bindValue(2, $name, PDO::PARAM_STR);
             $stmt->execute();
 
-            if ( ++$i > 500 ) {
-                $i = 0;
+            if ( ++$operations > $this->commit_size ) {
+                $operations = 0;
                 $db->commit();
                 $db->beginTransaction();
             }
@@ -72,7 +98,7 @@ class Builder
         }
         $db->commit();
 
-        $i = 0;
+        $operations = 0;
         $db->beginTransaction();
         foreach ( $this->reader->readNodes() as $id => $parentId ) {
             $stmt = $db->prepare('INSERT INTO nodes (id, parent_id) VALUES(?,?)');
@@ -80,8 +106,8 @@ class Builder
             $stmt->bindValue(2, $parentId, PDO::PARAM_INT);
             $stmt->execute();
 
-            if ( ++$i > 500 ) {
-                $i = 0;
+            if ( ++$operations > $this->commit_size ) {
+                $operations = 0;
                 $db->commit();
                 $db->beginTransaction();
             }
@@ -91,25 +117,8 @@ class Builder
         $db->exec('CREATE UNIQUE INDEX idx_names_id ON names(id)');
         $db->exec('CREATE UNIQUE INDEX idx_nodes_id ON nodes(id)');
         $db->exec('CREATE UNIQUE INDEX idx_nodes_parent_id ON nodes(parent_id)');
-    }
 
-    /**
-     * @return bool
-     * @throws Exception
-     */
-    public function validate() : bool {
-        $db = new PDO('sqlite:' . $this->target);
-        $result = $db->query('SELECT name FROM sqlite_master WHERE type = "table"');
-        $tables = $result->fetchAll(PDO::FETCH_COLUMN);
-        if ( $tables != ['names', 'nodes'])
-            throw new Exception(print_r($tables, true));
-
-        $result = $db->query('SELECT name FROM sqlite_master WHERE type = "index"');
-        $indexes = $result->fetchAll(PDO::FETCH_COLUMN);
-        if ( $indexes != ['idx_names_id', 'idx_nodes_id'] )
-            throw new Exception(print_r($indexes, true));
-
-        return true;
+        return $this;
     }
 
 }

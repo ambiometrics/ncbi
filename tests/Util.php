@@ -57,7 +57,7 @@ class Util
         Util::createFiles($file, $data);
         $reader = new Reader($file);
         $builder = new Builder($reader);
-        $builder->setTarget($target);
+        $builder->setTargetFilename($target);
         $builder->build();
     }
 }
